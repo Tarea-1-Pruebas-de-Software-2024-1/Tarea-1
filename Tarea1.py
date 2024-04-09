@@ -1,15 +1,51 @@
 import logging
 import os.path
+import secrets
+import string
 from argon2 import PasswordHasher
 from getpass import getpass
 
 logger = logging.getLogger(__name__)
 
+def generator():
+    logger.info('Iniciando generador de contraseñas')
+    try:    
+        print("Generador de Contraseñas: \n ¿Qué caracteres desea utilizar? \n 1. Alfabéticos \n 2. Alfanúmericos \n 3. Alfanúmericos con signos de puntuación \n")
+        elec = 0
+        while elec < 1 or elec > 3:
+            elec = int(input("Ingrese elección: "))
+            if elec < 1 and elec > 3:
+                print("Opción inválida, seleccione una de las opciones permitidas. \n")
+        num_car = 0
+        while num_car < 8:
+            num_car = int(input("Ingrese número de caracteres (8 mínimo):"))
+            if num_car < 8:
+                print("El mínimo de caracteres es 8. \n")
+                logger.warning("No cumple con el mínimo de caracteres")
+        logger.info("Generando la contraseña")
+        if elec == 1:
+            alphabet = string.ascii_letters
+            password = ''.join(secrets.choice(alphabet) for i in range(num_car))
+            print("La contraseña generada es: " ,password, "\n")
+        elif elec == 2:
+            alphabet = string.ascii_letters + string.digits
+            password = ''.join(secrets.choice(alphabet) for i in range(num_car))
+            print("La contraseña generada es: " ,password, "\n")
+        elif elec == 3:
+            alphabet = string.ascii_letters + string.digits + string.punctuation
+            password = ''.join(secrets.choice(alphabet) for i in range(num_car))
+            print("La contraseña generada es: " ,password, "\n")
+                
+    except:
+        logger.error("Falló la generación de contraseñas")
+    logger.info("Cerrando generador de contraseñas")
+
+
 def user():
     while True:
-        logger.info('Ingresado a menú principal de administrador')
+        logger.info('Ingresado a menú principal de usuario')
         print(
-            '''Administrador\n\n
+            '''Usuario\n\n
             Por favor seleccione una opción:\n\n
             1. Crear contraseña
             2. Recuperar contraseña
@@ -20,10 +56,16 @@ def user():
         try:
             option = int(input("Ingrese una opción: "))
             if option == 1:
+                generator()
             elif option == 2:
+                print()
             elif option == 3:
+                print()
             elif option == 4:
+                print()
             elif option == 5:
+                logger.info('Opción seleccionada: Cerrar sesión')
+                break
             else:
                 print("Opción incorrecta, por favor ingrese una opción nuevamente")
                 logger.warning('Opción seleccionada incorrecta')  
