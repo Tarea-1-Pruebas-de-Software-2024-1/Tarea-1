@@ -14,7 +14,7 @@ def generator():
         elec = 0
         while elec < 1 or elec > 3:
             elec = int(input("Ingrese elección: "))
-            if elec < 1 and elec > 3:
+            if elec < 1 or elec > 3:
                 print("Opción inválida, seleccione una de las opciones permitidas. \n")
         num_car = 0
         while num_car < 8:
