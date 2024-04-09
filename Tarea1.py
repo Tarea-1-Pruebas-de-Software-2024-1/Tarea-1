@@ -6,7 +6,32 @@ from getpass import getpass
 logger = logging.getLogger(__name__)
 
 def user():
-    return    
+    while True:
+        logger.info('Ingresado a menú principal de administrador')
+        print(
+            '''Administrador\n\n
+            Por favor seleccione una opción:\n\n
+            1. Crear contraseña
+            2. Recuperar contraseña
+            3. Modificar contraseña
+            4. Eliminar contraseña
+            5. Cerrar sesión
+            ''')
+        try:
+            option = int(input("Ingrese una opción: "))
+            if option == 1:
+            elif option == 2:
+            elif option == 3:
+            elif option == 4:
+            elif option == 5:
+            else:
+                print("Opción incorrecta, por favor ingrese una opción nuevamente")
+                logger.warning('Opción seleccionada incorrecta')  
+        except:
+            print("Opción incorrecta, por favor ingrese una opción nuevamente")
+            logger.warning('Opción seleccionada incorrecta')
+    logger.info('Sesión cerrada')
+    return
 
 def create_user(username, password):
     try:
