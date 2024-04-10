@@ -2,10 +2,66 @@ import logging
 import os.path
 import secrets
 import string
+import base64
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.fernet import Fernet
 from argon2 import PasswordHasher
 from getpass import getpass
 
+KDF_ALGORITHM = hashes.SHA256()
+KDF_LENGTH = 32
+KDF_ITERATIONS = 120000
+
 logger = logging.getLogger(__name__)
+username = ""
+
+def create_password():
+    global username
+    appPass = None
+    logger.info('Iniciando creación de contraseña')
+    try:
+        logger.info('Inicio de autenticación')
+        print("---Autenticación requerida---")
+        appPass = input("Por favor ingrese su contraseña: ")
+        if not login(username, appPass):
+            logger.warning('Autenticación incorrecta, finalizando creación de contraseña')
+            return
+    except:
+        logger.error('Ocurrió un error en el proceso de autenticación')
+        return
+    logger.info('Usuario autenticado')
+    try:
+        logger.info('Inicio de proceso de creación de contraseña')
+        password = input("Por favor ingrese la contraseña a almacenar: ")
+        keyword = input("Por favor ingrese una palabra clave a asociar con la contraseña: ")
+        plaintext = (keyword+password).encode()
+        
+        salt = b'salt_'  # You should use a different salt for each user
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = kdf.derive(appPass.encode())
+        key = base64.urlsafe_b64encode(key)
+        f = Fernet(key)
+        ciphertext = f.encrypt(plaintext)
+        ciphertext = base64.urlsafe_b64encode(ciphertext).decode()
+        
+        with open("{}.txt".format(username), 'a') as newPassword:
+            newPassword.write(ciphertext + "\n")
+        logger.info('Contraseña creada y almacenada exitosamente')
+        print("Contraseña creada")
+    except:
+        print("Error al crear contraseña")
+        logger.error('No fue posible almacenar la contraseña')
+        return
+    logger.info('Fin de creación de contraseña')
+    return
 
 def generator():
     logger.info('Iniciando generador de contraseñas')
@@ -42,6 +98,7 @@ def generator():
 
 
 def user():
+    global username
     while True:
         logger.info('Ingresado a menú principal de usuario')
         print(
@@ -51,12 +108,13 @@ def user():
             2. Recuperar contraseña
             3. Modificar contraseña
             4. Eliminar contraseña
-            5. Cerrar sesión
+            5. Generador de contraseñas
+            6. Cerrar sesión
             ''')
         try:
             option = int(input("Ingrese una opción: "))
             if option == 1:
-                generator()
+                create_password()
             elif option == 2:
                 print()
             elif option == 3:
@@ -64,6 +122,8 @@ def user():
             elif option == 4:
                 print()
             elif option == 5:
+                generator()
+            elif option == 6:
                 logger.info('Opción seleccionada: Cerrar sesión')
                 break
             else:
@@ -72,6 +132,7 @@ def user():
         except:
             print("Opción incorrecta, por favor ingrese una opción nuevamente")
             logger.warning('Opción seleccionada incorrecta')
+    username = ""
     logger.info('Sesión cerrada')
     return
 
@@ -93,6 +154,7 @@ def create_user(username, password):
     return False
 
 def admin():
+    global username
     while True:
         logger.info('Ingresado a menú principal de administrador')
         print(
@@ -121,6 +183,7 @@ def admin():
         except:
             print("Opción incorrecta, por favor ingrese una opción nuevamente")
             logger.warning('Opción seleccionada incorrecta')
+    username = ""
     logger.info('Sesión cerrada')
     return
 
@@ -137,6 +200,7 @@ def login(username, password):
         return False
         
 def main():
+    global username
     logging.basicConfig(filename='tarea1.log', level=logging.INFO)
     logger.info('Inicio de aplicación')
     while True:
