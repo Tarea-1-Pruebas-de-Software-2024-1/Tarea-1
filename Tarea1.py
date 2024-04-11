@@ -193,7 +193,12 @@ def create_password():
         password = input("Por favor ingrese la contraseña a almacenar: ")
         keyword = input("Por favor ingrese una palabra clave a asociar con la contraseña: ")
         plaintext = (keyword+':'+password).encode()
-        
+
+        data = get_file_data(username)
+        if len(data) == 0:
+            print("No fue posible recuperar información del usuario")
+            return
+
         salt = b'salt_'  # You should use a different salt for each user
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -205,13 +210,27 @@ def create_password():
         key = kdf.derive(appPass.encode())
         key = base64.urlsafe_b64encode(key)
         f = Fernet(key)
-        ciphertext = f.encrypt(plaintext)
-        ciphertext = base64.urlsafe_b64encode(ciphertext).decode()
+
+        found = False
         
-        with open("{}.txt".format(username), 'a') as newPassword:
-            newPassword.write(ciphertext+'\n')
-        logger.info('Contraseña creada y almacenada exitosamente')
-        print("Contraseña creada")
+        for cipher in data[1]:
+            encrypted = base64.urlsafe_b64decode(cipher.strip()).decode()
+            content = f.decrypt(encrypted).decode().split(':')
+            if content[0] == keyword:
+                found = True
+                break
+        
+        if found:
+            print("Palabra clave ya está asociada a una contraseña")
+            
+        else:
+            ciphertext = f.encrypt(plaintext)
+            ciphertext = base64.urlsafe_b64encode(ciphertext).decode()
+            
+            with open("{}.txt".format(username), 'a') as newPassword:
+                newPassword.write(ciphertext+'\n')
+            logger.info('Contraseña creada y almacenada exitosamente')
+            print("Contraseña creada")
     except:
         print("Error al crear contraseña")
         logger.error('No fue posible almacenar la contraseña')
@@ -306,6 +325,7 @@ def get_password():
         return
     logger.info('Cerrando proceso de recuperación de contraseña')
     return
+
 def user():
     global username
     while True:
