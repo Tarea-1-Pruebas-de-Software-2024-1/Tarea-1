@@ -17,6 +17,86 @@ KDF_ITERATIONS = 120000
 logger = logging.getLogger(__name__)
 username = ""
 
+def get_file_data(username):
+    data = []
+    try:
+        with open("{}.txt".format(username)) as fileData:
+            data.append(fileData.readline().strip())
+            data.append(fileData.readlines())
+        return data
+    except:
+        return []
+    return []
+
+def change_password():
+    global username
+    appPass = None
+    logger.info('Iniciando modificación de contraseña')
+    try:
+        logger.info('Inicio de autenticación')
+        print("---Autenticación requerida---")
+        appPass = input("Por favor ingrese su contraseña: ")
+        if not login(username, appPass):
+            logger.warning('Autenticación incorrecta, finalizando creación de contraseña')
+            return
+    except:
+        logger.error('Ocurrió un error en el proceso de autenticación')
+        return
+    logger.info('Usuario autenticado')
+    try:
+        logger.info('Inicio de proceso de modificación de contraseña')
+        keyword = input("Por favor ingrese la palabra clave asociada a la contraseña: ")
+        password = input("Por favor ingrese la nueva contraseña: ")
+
+        data = get_file_data(username)
+        if len(data) == 0:
+            print("No fue posible recuperar información del usuario")
+            return
+        
+        newData = []
+
+        plaintext = (keyword+':'+password).encode()
+        
+        salt = b'salt_'  # You should use a different salt for each user
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = kdf.derive(appPass.encode())
+        key = base64.urlsafe_b64encode(key)
+        f = Fernet(key)
+        
+        found = False
+        
+        for cipher in data[1]:
+            encrypted = base64.urlsafe_b64decode(cipher.strip()).decode()
+            content = f.decrypt(encrypted).decode().split(':')
+            if content[0] == keyword:
+                found = True
+                plaintext = (keyword+':'+password).encode()
+                ciphertext = f.encrypt(plaintext)
+                ciphertext = base64.urlsafe_b64encode(ciphertext).decode()
+                newData.append(ciphertext)
+            else:
+                newData.append(cipher)
+            
+        if not found:
+            print("No encontrado")
+        else:
+            with open("{}.txt".format(username), 'w') as newFile:
+                newFile.write(data[0]+'\n')
+                newFile.write('\n'.join(newData))
+            print("Contraseña modificada correctamente.")
+    except:
+        print("Error en la operación")
+        return
+    logger.info('Fin de modificación de contraseña')
+    return
+
+
 def create_password():
     global username
     appPass = None
@@ -171,7 +251,7 @@ def user():
             elif option == 2:
                 get_password()
             elif option == 3:
-                print()
+                change_password()
             elif option == 4:
                 print()
             elif option == 5:
