@@ -36,7 +36,7 @@ def create_password():
         logger.info('Inicio de proceso de creación de contraseña')
         password = input("Por favor ingrese la contraseña a almacenar: ")
         keyword = input("Por favor ingrese una palabra clave a asociar con la contraseña: ")
-        plaintext = (keyword+password).encode()
+        plaintext = (keyword+':'+password).encode()
         
         salt = b'salt_'  # You should use a different salt for each user
         kdf = PBKDF2HMAC(
