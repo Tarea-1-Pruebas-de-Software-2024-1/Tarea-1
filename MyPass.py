@@ -37,7 +37,7 @@ def change_password():
         print("---Autenticación requerida---")
         appPass = input("Por favor ingrese su contraseña: ")
         if not login(username, appPass):
-            logger.warning('Autenticación incorrecta, finalizando creación de contraseña')
+            logger.warning('Autenticación incorrecta, finalizando modificación de contraseña')
             return
     except:
         logger.error('Ocurrió un error en el proceso de autenticación')
@@ -117,7 +117,7 @@ def delete_password():
         print("---Autenticación requerida---")
         appPass = input("Por favor ingrese su contraseña: ")
         if not login(username, appPass):
-            logger.warning('Autenticación incorrecta, finalizando creación de contraseña')
+            logger.warning('Autenticación incorrecta, finalizando eliminación de contraseña')
             return
     except:
         logger.error('Ocurrió un error en el proceso de autenticación')
