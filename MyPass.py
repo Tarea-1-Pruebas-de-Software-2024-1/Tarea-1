@@ -285,13 +285,13 @@ def generator():
 def get_password():
     global username
     appPass = None
-    logger.info('Iniciando creación de contraseña')
+    logger.info('Iniciando recuperación de contraseña')
     try:
         logger.info('Inicio de autenticación')
         print("---Autenticación requerida---")
         appPass = input("Por favor ingrese su contraseña: ")
         if not login(username, appPass):
-            logger.warning('Autenticación incorrecta, finalizando creación de contraseña')
+            logger.warning('Autenticación incorrecta, finalizando recuperación de contraseña')
             return
     except:
         logger.error('Ocurrió un error en el proceso de autenticación')
@@ -396,6 +396,30 @@ def create_user(username, password):
         logger.error('Falló la creación de nuevo usuario')
     return False
 
+def change_password_admin():
+    global username
+    logger.info('Iniciando cambio de contraseña de adminstrador')
+    try:
+        logger.info('Inicio de autenticación')
+        print("---Autenticación requerida---")
+        appPass = input("Por favor ingrese su contraseña: ")
+        if not login(username, appPass):
+            logger.warning('Autenticación incorrecta, finalizando cambio de contraseña de administrador')
+            return
+    except:
+        logger.error('Ocurrió un error en el proceso de autenticación')
+        return
+    try:
+        password = input("Ingrese nueva contraseña de administrador: ")
+        hashed = PasswordHasher().hash(password)
+        with open("{}.txt".format(username), 'w') as newPass:
+            newPass.write("{}\n".format(hashed))
+            logger.info("Contraseña de administrador cambiada exitosamente")
+        print("La contraseña de administrador se ha modificado correctamente")
+    except:
+        logger.error("Falló el cambio de contraseña de administrador.")
+        return
+
 def admin():
     global username
     while True:
@@ -404,7 +428,8 @@ def admin():
             '''Administrador\n\n
             Por favor seleccione una opción:\n\n
             1. Crear usuario
-            2. Cerrar sesión
+            2. Modificar contraseña de administrador
+            3. Cerrar sesión
             ''')
         try:
             option = int(input("Ingrese una opción: "))
@@ -417,6 +442,9 @@ def admin():
                 else:
                     print("No se pudo crear usuario")
             elif option == 2:
+                logger.info("Opción seleccionada: Modificar contraseña de administrador")
+                change_password_admin()
+            elif option == 3:
                 logger.info('Opción seleccionada: Cerrar sesión')
                 break
             else:
