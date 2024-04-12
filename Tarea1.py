@@ -47,6 +47,10 @@ def change_password():
         logger.info('Inicio de proceso de modificación de contraseña')
         keyword = input("Por favor ingrese la palabra clave asociada a la contraseña: ")
         password = input("Por favor ingrese la nueva contraseña: ")
+        
+        if len(password) < 8 or len(password) > 32:
+            print("Longitud de contraseña incorrecto")
+            return
 
         data = get_file_data(username)
         if len(data) == 0:
@@ -88,7 +92,7 @@ def change_password():
                 newData.append(cipher.strip())
             
         if not found:
-            print("No encontrado")
+            print("Palabra clave no ha sido encontrada")
         
         else:
             with open("{}.txt".format(username), 'w') as newFile:
@@ -158,7 +162,7 @@ def delete_password():
                 newData.append(cipher.strip())
             
         if not found:
-            print("No encontrado")
+            print("Palabra clave no ha sido encontrada")
         else:
             with open("{}.txt".format(username), 'w') as newFile:
                 newFile.write(data[0]+'\n')
@@ -191,7 +195,13 @@ def create_password():
     try:
         logger.info('Inicio de proceso de creación de contraseña')
         password = input("Por favor ingrese la contraseña a almacenar: ")
+        if len(password) < 8 or len(password) > 32:
+            print("Longitud de contraseña incorrecto")
+            return
         keyword = input("Por favor ingrese una palabra clave a asociar con la contraseña: ")
+        if len(keyword) < 1:
+            print("Palabra clave debe tener al menos una letra de largo")
+            return
         plaintext = (keyword+':'+password).encode()
 
         data = get_file_data(username)
@@ -366,6 +376,10 @@ def user():
     return
 
 def create_user(username, password):
+    if len(username) < 1:
+        print("Nombre de usuario no puede estar vacío")
+    if len(password) < 5:
+        print("Contraseña no puede ser menor a 5 caracteres")
     try:
         hashed = PasswordHasher().hash(password)
         if os.path.isfile("{}.txt".format(username)):
@@ -397,8 +411,7 @@ def admin():
             if option == 1:
                 logger.info('Opción seleccionada: Crear usuario')
                 username = input("Ingrese nombre de usuario: ")
-                print()
-                password = getpass("Ingrese su contraseña: ")
+                password = getpass("Ingrese su contraseña (mínimo 5 caracteres): ")
                 if create_user(username,password):
                     print("Usuario ha sido creado exitosamente")
                 else:
